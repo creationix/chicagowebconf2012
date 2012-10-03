@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>JavaScript Everywhere - By Tim Caswell</title>
+  <title>App Scale JavaScript - By Tim Caswell</title>
   <meta name="description" content="A story of writing libraries to be used in both the browser and on the server.">
   <meta name="author" content="Tim Caswell">
 
@@ -12,6 +12,14 @@
   <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="css/theme/beige.css" id="theme">
   <link rel="stylesheet" href="lib/css/zenburn.css">
+  <style>
+    .reveal section img.navimage {
+      float: left;
+      position: relative;
+      margin-right: -100%;
+      margin-left: -70px;
+    }
+  </style>
 
   <script>
     // If the query includes 'print-pdf' we'll use the PDF print sheet
@@ -31,9 +39,11 @@
 <div class="slides">
 
 <section data-markdown>
-# JavaScript Everywhere!
+# App Scale JavaScript
 
-### But How?
+### Sharing code between client and server
+
+![](images/creationix.png)
 </section>
 
 <section>
@@ -90,6 +100,8 @@ The final product.
 <section data-markdown>
 ## Step 1, The File Structure
 
+<img src="images/1-tree.png" class="navimage"/>
+
 ```
 .
 ├── node_modules/
@@ -108,6 +120,8 @@ The final product.
 
 <section data-markdown>
 ### package.json
+
+<img src="images/1-package.json.png" class="navimage"/>
 
 ```javascript
 {
@@ -134,6 +148,10 @@ The final product.
 
 <h3>public/index.html</h3>
 
+<p>
+  <img src="images/1-index.html.png" class="navimage"/>
+</p>
+
 <pre><code>&lt;!doctype html>
 &lt;html lang="en">
 &lt;head>
@@ -155,6 +173,8 @@ The final product.
 <section>
 <section data-markdown>
 ## Step 2, Architect and Smith
+
+<img src="images/2-tree.png" class="navimage"/>
 
 ```
 .
@@ -178,6 +198,8 @@ The final product.
 
 <section data-markdown>
 ### package.json
+
+<img src="images/2-package.json.png" class="navimage"/>
 
 ```javascript
 {
@@ -205,21 +227,29 @@ The final product.
 <section data-markdown>
 ### server.js
 
+<img src="images/2-server.js.png" class="navimage"/>
+
 ```javascript
 var architect = require('architect');
+
 var configPath = __dirname + "/config.js";
 
 var config = architect.loadConfig(configPath);
+
 architect.createApp(config, function (err, app) {
     if (err) throw err;
+
     var address = app.services.http.address();
     console.log("App listening at", address);
+
 });
 ```
 </section>
 
 <section data-markdown>
 ### config.js
+
+<img src="images/2-config.js.png" class="navimage"/>
 
 ```javascript
 var root = __dirname + "/public";
@@ -245,15 +275,18 @@ module.exports = [
 <section data-markdown>
 ### public/client.js
 
+<img src="images/2-client.js.png" class="navimage"/>
+
 ```javascript
 require(['architect'], function (architect) {
-  architect.resolveConfig([
+  var config = [
     {
       packagePath: "plugins/smith.js",
       debug: (/debug/).test(window.location.search),
       url: "/smith"
     }
-  ], function (err, config) {
+  ];
+  architect.resolveConfig(config, function (err, config) {
     if (err) throw err;
     window.app = architect.createApp(config);
   });
@@ -273,6 +306,8 @@ require(['architect'], function (architect) {
 <section>
 <section data-markdown>
 ## Step 3, Add a Terminal!
+
+<img src="images/3-tree.png" class="navimage"/>
 
 ```
 .
@@ -296,6 +331,8 @@ require(['architect'], function (architect) {
 
 <section data-markdown>
 ### package.json
+
+<img src="images/3-package.json.png" class="navimage"/>
 
 ```javascript
 {
@@ -324,6 +361,8 @@ require(['architect'], function (architect) {
 <section data-markdown>
 ### config.js
 
+<img src="images/3-config.js.png" class="navimage"/>
+
 ```javascript
 module.exports = [
   {
@@ -349,6 +388,99 @@ module.exports = [
 </section>
 
 <section data-markdown>
+### plugins/tty.js
+
+<img src="images/3-tty.js.png" class="navimage"/>
+
+```javascript
+module.exports = setup;
+setup.consumes = ["smith"];
+
+function setup(config, imports, register) {
+
+  imports.smith.on("setup", function (api) {
+    api.spawn = spawn;
+    api.write = write;
+    api.end = end;
+    api.resize = resize;
+    api.life = life;
+  });
+
+  function life(callback) {}
+  function spawn(callback) { ... }
+  function write(fd, chunk) { ... }
+  function end(fd, chunk) { ... }
+  function resize(fd, width, height) { ... }
+
+  register();
+}
+```
+</section>
+
+<section data-markdown>
+### public/plugins/tty.js
+
+<img src="images/3-tty.js-2.png" class="navimage"/>
+
+```javascript
+define(function () {
+  setup.consumes = ["smith"];
+  setup.provides = ["tty"];
+
+  function setup(config, imports, register) {
+    imports.smith.on("setup", function (api) {
+      api.onData = onData;
+      api.onExit = onExit;
+      api.life = life;
+    });
+
+    function life(callback) {}
+    function onData(fd, chunk) { ... }
+    function onExit(fd, code) { ... }
+
+    imports.smith.once("connect", function (remote) {
+      var service = { spawn: function (callback) { ... } };
+      register(null, {tty: service });
+    });
+    ...
+  }
+  return setup;
+});
+```
+</section>
+
+<section data-markdown>
+### public/plugins/gui.js
+
+<img src="images/3-gui.js.png" class="navimage"/>
+
+```javascript
+define(["tty"], function (tty) {
+  setup.consumes = ["tty"];
+
+  function setup(config, imports, register) {
+
+    var termDiv = document.getElementById("terminal");
+
+    imports.tty.spawn(function (err, terminal) {
+      if (err) throw err;
+
+      var box = new tty.Terminal(80, 24, function (chunk) {
+          terminal.write(chunk);
+      });
+      box.open(termDiv);
+      ...
+    });
+
+    register();
+  }
+
+  return setup;
+});
+```
+</section>
+
+<section data-markdown>
 ### Terminal Server!
 
 ![browser repl](images/step3-node.png)
@@ -364,7 +496,7 @@ module.exports = [
 <section data-markdown>
 # THE END
 
-### By Tim Caswell / creationix.com
+### By Tim Caswell
 </section>
 
 
