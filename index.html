@@ -39,11 +39,12 @@
 <div class="slides">
 
 <section data-markdown>
-# App Scale JavaScript
+# App Scale* JavaScript
 
-### Sharing code between client and server
+Or how to achieve server-client *synergy* in a single-language development environment.
 
-![](images/creationix.png)
+<small>*Mind the buzzwords.</small>
+
 </section>
 
 <section>
@@ -295,7 +296,6 @@ require(['architect'], function (architect) {
 </section>
 
 <section data-markdown>
-### We have a connection!
 
 ![browser repl](images/step2-node.png)
 ![browser repl](images/step2-browser.png)
@@ -335,8 +335,7 @@ require(['architect'], function (architect) {
 <img src="images/3-package.json.png" class="navimage"/>
 
 ```javascript
-{
-  ...
+{ ...
   "dependencies": {
     "jamjs": "~0.2.8",
     "architect": "~0.1.6",
@@ -345,15 +344,13 @@ require(['architect'], function (architect) {
     "send": "~0.1.0",
     "pty.js": "~0.1.2"
   },
-  "jam": {
-    ...
+  "jam": { ...
     "dependencies": {
       "architect": "~0.1.6",
       "smith": "~0.1.13",
       "tty": "~0.0.1"
     }
-  },
-  ...
+  }, ...
 }
 ```
 </section>
@@ -365,22 +362,19 @@ require(['architect'], function (architect) {
 
 ```javascript
 module.exports = [
-  {
-    packagePath: "./plugins/http.js", ...
-  },
-  {
-    packagePath: "./plugins/static.js", ...
-  },
-  {
-    packagePath: "./plugins/smith.js", ...
-  },
+  { packagePath: "./plugins/http.js", ... },
+  { packagePath: "./plugins/static.js", ... },
+  { packagePath: "./plugins/smith.js", ... },
   {
     packagePath: "./plugins/tty.js",
     command: "luvit",
     options: {
       name: "xterm-color",
       cols: 80, rows: 30,
-      ...
+      cwd: home,
+      env: {
+        HOME: home
+      }
     }
   }
 ];
@@ -397,7 +391,6 @@ module.exports = setup;
 setup.consumes = ["smith"];
 
 function setup(config, imports, register) {
-
   imports.smith.on("setup", function (api) {
     api.spawn = spawn;
     api.write = write;
@@ -405,7 +398,6 @@ function setup(config, imports, register) {
     api.resize = resize;
     api.life = life;
   });
-
   function life(callback) {}
   function spawn(callback) { ... }
   function write(fd, chunk) { ... }
@@ -433,15 +425,11 @@ define(function () {
       api.onExit = onExit;
       api.life = life;
     });
-
     function life(callback) {}
     function onData(fd, chunk) { ... }
     function onExit(fd, code) { ... }
 
-    imports.smith.once("connect", function (remote) {
-      var service = { spawn: function (callback) { ... } };
-      register(null, {tty: service });
-    });
+    imports.smith.once("connect", function (remote) { ... });
     ...
   }
   return setup;
@@ -459,19 +447,15 @@ define(["tty"], function (tty) {
   setup.consumes = ["tty"];
 
   function setup(config, imports, register) {
-
     var termDiv = document.getElementById("terminal");
-
     imports.tty.spawn(function (err, terminal) {
       if (err) throw err;
-
       var box = new tty.Terminal(80, 24, function (chunk) {
           terminal.write(chunk);
       });
       box.open(termDiv);
       ...
     });
-
     register();
   }
 
@@ -487,16 +471,22 @@ define(["tty"], function (tty) {
 </section>
 
 <section data-markdown>
-### Terminal Client!
-
 ![browser repl](images/step3-browser.png)
 </section>
 </section>
 
+<section>
 <section data-markdown>
-# THE END
+### Module Dependencies
 
-### By Tim Caswell
+</section>
+<section data-markdown>
+### Plugin Dependencies
+</section>
+</section>
+
+<section data-markdown>
+# Questions?
 </section>
 
 
