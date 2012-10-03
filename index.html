@@ -88,19 +88,18 @@ The final product.
 
 <section>
 <section data-markdown>
-## Bare Directory Structure
+## Step 1, The File Structure
 
 ```
 .
 ├── node_modules
-│   └── jamjs
-│       └── ...
+│   └── ...
 ├── package.json
 ├── public
 │   ├── client.js
 │   ├── index.html
 │   ├── jam
-│   │   ├── require.config.js
+│   │   ├── ...
 │   │   └── require.js
 │   └── style.css
 └── server.js
@@ -152,6 +151,128 @@ The final product.
 <p>A plain HTML5 page</p>
 </section>
 </section>
+
+<section>
+<section data-markdown>
+## Step 2, Architect and Smith
+
+```
+.
+├── config.js
+├── node_modules
+│   └── ...
+├── package.json
+├── plugins
+│   ├── http.js
+│   ├── smith.js
+│   └── static.js
+├── public
+│   ├── client.js
+│   ├── index.html
+│   ├── jam
+│   │   ├── ...
+│   │   └── require.js
+│   ├── plugins
+│   │   └── smith.js
+│   └── style.css
+└── server.js
+```
+</section>
+
+<section data-markdown>
+### package.json
+
+```javascript
+{
+  ...
+  "dependencies": {
+    "jamjs": "~0.2.8",
+    "architect": "~0.1.6",
+    "smith": "~0.1.13",
+    "ws": "~0.4.22",
+    "send": "~0.1.0"
+  },
+  "jam": {
+    "packageDir": "public/jam",
+    "baseUrl": "public",
+    "dependencies": {
+      "architect": "~0.1.6",
+      "smith": "~0.1.13"
+    }
+  },
+  ...
+}
+```
+</section>
+
+<section data-markdown>
+### server.js
+
+```javascript
+var architect = require('architect');
+var configPath = __dirname + "/config.js";
+
+var config = architect.loadConfig(configPath);
+architect.createApp(config, function (err, app) {
+    if (err) throw err;
+    var address = app.services.http.address();
+    console.log("App listening at", address);
+});
+```
+</section>
+
+<section data-markdown>
+### config.js
+
+```javascript
+var root = __dirname + "/public";
+module.exports = [
+  {
+    packagePath: "./plugins/http.js",
+    port: process.env.PORT,
+    host: process.env.IP
+  },
+  {
+    packagePath: "./plugins/static.js",
+    folders: [ {mount: "/", root: root } ]
+  },
+  {
+    packagePath: "./plugins/smith.js",
+    debug: process.env.DEBUG,
+    url: "/smith"
+  }
+];
+```
+</section>
+
+<section data-markdown>
+### public/client.js
+
+```javascript
+require(['architect'], function (architect) {
+  architect.resolveConfig([
+    {
+      packagePath: "plugins/smith.js",
+      debug: (/debug/).test(window.location.search),
+      url: "/smith"
+    }
+  ], function (err, config) {
+    if (err) throw err;
+    window.app = architect.createApp(config);
+  });
+});
+```
+</section>
+
+<section data-markdown>
+### We have a connection!
+
+![browser repl](images/step2-node.png)
+![browser repl](images/step2-browser.png)
+</section>
+
+</section>
+
 
 <section data-markdown>
 # THE END

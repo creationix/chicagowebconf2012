@@ -1,12 +1,13 @@
+var root = __dirname + "/public";
 module.exports = [
   {
     packagePath: "./plugins/http.js",
-    port: process.env.PORT || null,
-    host: process.env.IP || null
+    port: process.env.PORT,
+    host: process.env.IP
   },
   {
     packagePath: "./plugins/static.js",
-    folders: [ {mount: "/", root: __dirname + "/public" } ]
+    folders: [ {mount: "/", root: root } ]
   },
   {
     packagePath: "./plugins/smith.js",
