@@ -72,7 +72,7 @@
 <section data-markdown>
 # Let's Make an App!
 
-It will be a [luvit][] repl in the browser.
+We'll make a [luvit][] repl in three simple steps.
 
 ![Luvit Logo](images/logo.png)
 
@@ -92,16 +92,16 @@ The final product.
 
 ```
 .
-├── node_modules
+├── node_modules/
 │   └── ...
-├── package.json
-├── public
-│   ├── client.js
-│   ├── index.html
-│   ├── jam
+├── public/
+│   ├── jam/
 │   │   ├── ...
 │   │   └── require.js
+│   ├── client.js
+│   ├── index.html
 │   └── style.css
+├── package.json
 └── server.js
 ```
 </section>
@@ -109,7 +109,7 @@ The final product.
 <section data-markdown>
 ### package.json
 
-```
+```javascript
 {
   "name": "try.luvit.io",
   "author": "Tim Caswell",
@@ -158,23 +158,20 @@ The final product.
 
 ```
 .
-├── config.js
-├── node_modules
-│   └── ...
-├── package.json
-├── plugins
+├── node_modules/
+├── plugins/
 │   ├── http.js
 │   ├── smith.js
 │   └── static.js
-├── public
+├── public/
+│   ├── jam/
+│   ├── plugins/
+│   │   └── smith.js
 │   ├── client.js
 │   ├── index.html
-│   ├── jam
-│   │   ├── ...
-│   │   └── require.js
-│   ├── plugins
-│   │   └── smith.js
 │   └── style.css
+├── config.js
+├── package.json
 └── server.js
 ```
 </section>
@@ -270,9 +267,99 @@ require(['architect'], function (architect) {
 ![browser repl](images/step2-node.png)
 ![browser repl](images/step2-browser.png)
 </section>
-
 </section>
 
+
+<section>
+<section data-markdown>
+## Step 3, Add a Terminal!
+
+```
+.
+├── plugins/
+│   ├── http.js
+│   ├── smith.js
+│   ├── static.js
+│   └── tty.js
+├── public/
+│   ├── plugins/
+│   │   ├── smith.js
+│   │   └── tty.js
+│   ├── client.js
+│   ├── index.html
+│   └── style.css
+├── config.js
+├── package.json
+└── server.js
+```
+</section>
+
+<section data-markdown>
+### package.json
+
+```javascript
+{
+  ...
+  "dependencies": {
+    "jamjs": "~0.2.8",
+    "architect": "~0.1.6",
+    "smith": "~0.1.13",
+    "ws": "~0.4.22",
+    "send": "~0.1.0",
+    "pty.js": "~0.1.2"
+  },
+  "jam": {
+    ...
+    "dependencies": {
+      "architect": "~0.1.6",
+      "smith": "~0.1.13",
+      "tty": "~0.0.1"
+    }
+  },
+  ...
+}
+```
+</section>
+
+<section data-markdown>
+### config.js
+
+```javascript
+module.exports = [
+  {
+    packagePath: "./plugins/http.js", ...
+  },
+  {
+    packagePath: "./plugins/static.js", ...
+  },
+  {
+    packagePath: "./plugins/smith.js", ...
+  },
+  {
+    packagePath: "./plugins/tty.js",
+    command: "luvit",
+    options: {
+      name: "xterm-color",
+      cols: 80, rows: 30,
+      ...
+    }
+  }
+];
+```
+</section>
+
+<section data-markdown>
+### Terminal Server!
+
+![browser repl](images/step3-node.png)
+</section>
+
+<section data-markdown>
+### Terminal Client!
+
+![browser repl](images/step3-browser.png)
+</section>
+</section>
 
 <section data-markdown>
 # THE END

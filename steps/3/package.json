@@ -1,0 +1,26 @@
+{
+  "name": "try.luvit.io",
+  "author": "Tim Caswell",
+  "version": "0.0.2",
+  "private": true,
+  "dependencies": {
+    "jamjs": "~0.2.8",
+    "architect": "~0.1.6",
+    "smith": "~0.1.13",
+    "ws": "~0.4.22",
+    "send": "~0.1.0",
+    "pty.js": "~0.1.2"
+  },
+  "jam": {
+    "packageDir": "public/jam",
+    "baseUrl": "public",
+    "dependencies": {
+      "architect": "~0.1.6",
+      "smith": "~0.1.13",
+      "tty": "~0.0.1"
+    }
+  },
+  "scripts": {
+    "install": "jam install"
+  }
+}
