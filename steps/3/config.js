@@ -17,8 +17,8 @@ module.exports = [
   },
   {
     packagePath: "./plugins/tty.js",
-    command: "/usr/local/bin/luvit",
-    args: [],
+    command: "rlwrap",
+    args: ["/usr/local/bin/luvit"],
     options: {
       name: "xterm-color",
       cols: 80, rows: 30,
